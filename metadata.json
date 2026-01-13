@@ -1,0 +1,6 @@
+
+{
+  "name": "2025 Sales Performance Dashboard",
+  "description": "A professional sales performance tracker for Water and Air systems, featuring interactive charts and data management for business presentations.",
+  "requestFramePermissions": ["camera"]
+}

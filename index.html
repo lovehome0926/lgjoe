@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Strategic Performance BI</title>
+  <link rel="manifest" href="./manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@19.0.0",
+    "react-dom": "https://esm.sh/react-dom@19.0.0",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+    "recharts": "https://esm.sh/recharts@2.15.0?external=react,react-dom",
+    "lucide-react": "https://esm.sh/lucide-react@0.460.0?external=react",
+    "xlsx": "https://esm.sh/xlsx@0.18.5",
+    "@google/genai": "https://esm.sh/@google/genai@0.21.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/"
+  }
+}
+</script>
+  <style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in { animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    
+    @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .animate-spin-slow { animation: spin-slow 12s linear infinite; }
+    
+    body { 
+      font-family: 'Inter', -apple-system, system-ui, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8fafc;
+      overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+  </style>
+</head>
+<body class="text-slate-900">
+  <div id="root">
+    <div class="flex flex-col items-center justify-center min-h-screen bg-slate-50">
+      <div class="relative">
+        <div class="absolute inset-0 bg-indigo-500/20 blur-3xl rounded-full"></div>
+        <div class="relative text-indigo-600 font-black text-3xl tracking-tighter animate-pulse mb-3">BI ENGINE v3.1</div>
+      </div>
+      <div class="text-slate-400 text-[10px] font-black uppercase tracking-[0.5em] mt-4">Initializing Strategic Lab...</div>
+    </div>
+  </div>
+  <script type="module" src="./index.tsx"></script>
+  <script>
+    // 注册一个空的 Service Worker 满足 PWA 安装要求
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('data:text/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdmZXRjaCcsIGZ1bmN0aW9uKGV2ZW50KSB7fSk7').catch(err => console.log('SW register failed:', err));
+      });
+    }
+  </script>
+</body>
+</html>
