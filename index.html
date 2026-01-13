@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>BI Hub v4.0 - Critical Recovery</title>
+  <title>BI Hub v4.0 - Global Intelligence</title>
   <link rel="manifest" href="manifest.json">
   <script>
-    // 防御性注入：防止代码中访问 process.env 导致崩溃
+    // 紧急环境注入
     window.process = window.process || { env: { API_KEY: "" } };
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -52,15 +52,15 @@
 <body class="text-slate-900">
   <div id="boot-status">
     <div class="text-indigo-600 font-black text-4xl animate-pulse tracking-tighter uppercase">BI Engine v4.0</div>
-    <div class="text-slate-400 text-[10px] font-black uppercase tracking-[0.6em] mt-6">Deploying Critical Recovery Patch</div>
+    <div class="text-slate-400 text-[10px] font-black uppercase tracking-[0.6em] mt-6">Initializing Systems</div>
     <div id="error-display"></div>
-    <button id="retry-btn" style="display:none; margin-top: 2rem; padding: 0.75rem 1.5rem; background: #0f172a; color: white; border-radius: 0.75rem; cursor: pointer; font-weight: 800; font-size: 12px; text-transform: uppercase;" onclick="location.reload()">Force Refresh</button>
+    <button id="retry-btn" style="display:none; margin-top: 2rem; padding: 0.75rem 1.5rem; background: #0f172a; color: white; border-radius: 0.75rem; cursor: pointer; font-weight: 800; font-size: 12px; text-transform: uppercase;" onclick="location.reload()">Force Restart</button>
   </div>
 
   <div id="root"></div>
 
   <script>
-    // 强制保险：5秒后如果还没进 App，强行显示错误详情
+    // 强制超时诊断
     setTimeout(() => {
       const status = document.getElementById('boot-status');
       if (status && status.style.display !== 'none') {
@@ -68,18 +68,18 @@
         const retry = document.getElementById('retry-btn');
         if (errorDisplay) {
           errorDisplay.style.display = 'block';
-          errorDisplay.innerHTML = "<b>BOOT_TIMEOUT_AUTO_RECOVERY:</b><br/>Detecting script block. Check F12 Console.<br/><br/>If you see 'v3.1' in the background, your Vercel deployment is STUCK on an old version.";
+          errorDisplay.innerHTML = "<b>BOOT_STUCK:</b> 加载超时。<br/><br/><b>排查建议：</b><br/>1. 检查控制台是否存在 'MIME type' 错误。<br/>2. 确保 Vercel 项目设置中选择了 <b>Vite</b> 框架预设。<br/>3. 如果你直接部署源码，浏览器无法直接运行 .tsx。请确保 Vercel 正常运行了编译步骤。";
         }
         if (retry) retry.style.display = 'block';
       }
-    }, 5000);
+    }, 6000);
 
     window.onerror = function(msg, url, line, col, error) {
       const display = document.getElementById('error-display');
       const retry = document.getElementById('retry-btn');
       if (display) {
         display.style.display = 'block';
-        display.textContent = `CORE_CRASH: ${msg}\nFile: ${url}\nLine: ${line}`;
+        display.textContent = `CRITICAL_RUNTIME_ERROR: ${msg}\nUrl: ${url}\nLine: ${line}`;
       }
       if (retry) retry.style.display = 'block';
       return false;
