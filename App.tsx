@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   BarChart2, 
@@ -13,9 +12,9 @@ import {
   RefreshCw,
   Lightbulb
 } from 'lucide-react';
-import { MonthlyData, ProductFilter, ActiveTab, Category, StrategicPlan } from './types.ts';
-import Dashboard from './components/Dashboard.tsx';
-import DataEntry from './components/DataEntry.tsx';
+import { MonthlyData, ProductFilter, ActiveTab, Category, StrategicPlan } from './types';
+import Dashboard from './components/Dashboard';
+import DataEntry from './components/DataEntry';
 
 const INITIAL_CATEGORIES: Category[] = [
   { id: 'water', name: 'Water Systems', color: 'indigo', type: 'sales' },

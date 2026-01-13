@@ -1,10 +1,9 @@
-
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { 
   Edit3, CheckCircle, Plus, Trash2, Camera, Loader2, Package, Briefcase, 
   ChevronRight, Activity, Filter, MousePointerClick
 } from 'lucide-react';
-import { MonthlyData, Category } from '../types.ts';
+import { MonthlyData, Category } from '../types';
 import { GoogleGenAI } from '@google/genai';
 
 interface DataEntryProps {
