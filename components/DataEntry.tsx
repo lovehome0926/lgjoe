@@ -1,7 +1,7 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { 
   Edit3, CheckCircle, Plus, Trash2, Camera, Loader2, Package, Briefcase, 
-  ChevronRight, Activity, Filter, MousePointerClick, X
+  ChevronRight, Activity, Filter, MousePointerClick, X, Edit2
 } from 'lucide-react';
 import { MonthlyData, Category } from '../types';
 import { GoogleGenAI, Type } from '@google/genai';
@@ -11,18 +11,21 @@ interface DataEntryProps {
   categories: Category[];
   onDataChange: (index: number, field: string, value: string | number) => void;
   onAddCategory: (name: string) => void;
+  onRenameCategory: (id: string, newName: string) => void;
   onRemoveCategory: (id: string) => void;
   onSetData: (data: MonthlyData[]) => void;
   onFinish: () => void;
 }
 
 const DataEntry: React.FC<DataEntryProps> = ({ 
-  data, categories, onDataChange, onAddCategory, onRemoveCategory, onSetData, onFinish 
+  data, categories, onDataChange, onAddCategory, onRenameCategory, onRemoveCategory, onSetData, onFinish 
 }) => {
   const [activeMainTab, setActiveMainTab] = useState<'products' | 'talent' | 'activity'>('products');
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [newCatName, setNewCatName] = useState('');
   const [isAddingCat, setIsAddingCat] = useState(false);
+  const [editingCatId, setEditingCatId] = useState<string | null>(null);
+  const [editNameValue, setEditNameValue] = useState('');
   const visionInputRef = useRef<HTMLInputElement>(null);
 
   const productCategories = useMemo(() => categories.filter(c => c.type === 'sales'), [categories]);
@@ -40,7 +43,6 @@ const DataEntry: React.FC<DataEntryProps> = ({
   useEffect(() => {
     if (activeMainTab === 'products' || activeMainTab === 'talent') {
       if (activeCategories.length > 0) {
-        // If the current focusedCatId is no longer in active categories, switch to first available
         if (!activeCategories.find(c => c.id === focusedCatId)) {
           setFocusedCatId(activeCategories[0].id);
         }
@@ -57,6 +59,18 @@ const DataEntry: React.FC<DataEntryProps> = ({
       onAddCategory(newCatName.trim());
       setNewCatName('');
       setIsAddingCat(false);
+    }
+  };
+
+  const startEditing = (cat: Category) => {
+    setEditingCatId(cat.id);
+    setEditNameValue(cat.name);
+  };
+
+  const submitRename = () => {
+    if (editingCatId && editNameValue.trim()) {
+      onRenameCategory(editingCatId, editNameValue.trim());
+      setEditingCatId(null);
     }
   };
 
@@ -134,15 +148,37 @@ const DataEntry: React.FC<DataEntryProps> = ({
                 </div>
               ) : activeCategories.map(c => (
                 <div key={c.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl group border border-transparent hover:border-slate-200 transition-all">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-700">{c.name}</span>
-                  {activeMainTab === 'products' && categories.length > 1 && (
-                    <button 
-                      onClick={() => onRemoveCategory(c.id)}
-                      className="opacity-0 group-hover:opacity-100 p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                  {editingCatId === c.id ? (
+                    <div className="flex-1 flex gap-2">
+                       <input 
+                         autoFocus
+                         type="text" 
+                         value={editNameValue} 
+                         onChange={(e) => setEditNameValue(e.target.value)}
+                         onKeyDown={(e) => e.key === 'Enter' && submitRename()}
+                         className="flex-1 p-1 text-[10px] font-black uppercase bg-white border border-indigo-200 rounded outline-none"
+                       />
+                       <button onClick={submitRename} className="text-indigo-600"><CheckCircle size={14} /></button>
+                    </div>
+                  ) : (
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-700">{c.name}</span>
                   )}
+                  
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                    {!editingCatId && (
+                      <button onClick={() => startEditing(c)} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg">
+                        <Edit2 size={12} />
+                      </button>
+                    )}
+                    {activeMainTab === 'products' && categories.length > 1 && (
+                      <button 
+                        onClick={() => onRemoveCategory(c.id)}
+                        className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
               {activeCategories.length === 0 && activeMainTab !== 'activity' && (

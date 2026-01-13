@@ -90,7 +90,7 @@ export default function App() {
       data,
       savedPlan,
       exportedAt: new Date().toISOString(),
-      version: "3.1"
+      version: "3.2"
     };
     const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -136,6 +136,10 @@ export default function App() {
     const newCat: Category = { id, name, color: newColor, type: 'sales' };
     setCategories(prev => [...prev, newCat]);
     setData(prev => prev.map(item => ({ ...item, [`${id}Target`]: 0, [`${id}Actual`]: 0 })));
+  };
+
+  const renameCategory = (id: string, newName: string) => {
+    setCategories(prev => prev.map(c => c.id === id ? { ...c, name: newName } : c));
   };
 
   const removeCategory = (id: string) => {
@@ -205,14 +209,23 @@ export default function App() {
                 {activeTab === 'dashboard' ? 'Performance Analytics' : activeTab === 'strategy' ? 'Strategy Workshop' : 'Data Entry Matrix'}
                 <Sparkles className="text-amber-500 w-6 h-6" />
               </h2>
-              <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-2">Dynamic Intelligence Dashboard v3.1</p>
+              <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-2">Dynamic Intelligence Dashboard v3.2</p>
             </div>
           </div>
         )}
 
         <div className="animate-fade-in h-full">
           {activeTab === 'edit' ? (
-            <DataEntry data={data} categories={categories} onDataChange={handleDataChange} onAddCategory={addCategory} onRemoveCategory={removeCategory} onSetData={setData} onFinish={() => setActiveTab('dashboard')} />
+            <DataEntry 
+              data={data} 
+              categories={categories} 
+              onDataChange={handleDataChange} 
+              onAddCategory={addCategory} 
+              onRenameCategory={renameCategory}
+              onRemoveCategory={removeCategory} 
+              onSetData={setData} 
+              onFinish={() => setActiveTab('dashboard')} 
+            />
           ) : (
             <Dashboard 
               data={data} 
