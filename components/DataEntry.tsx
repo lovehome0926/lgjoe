@@ -1,7 +1,7 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { 
   Edit3, CheckCircle, Plus, Trash2, Camera, Loader2, Package, Briefcase, 
-  ChevronRight, Activity, Filter, MousePointerClick
+  ChevronRight, Activity, Filter, MousePointerClick, X
 } from 'lucide-react';
 import { MonthlyData, Category } from '../types';
 import { GoogleGenAI, Type } from '@google/genai';
@@ -21,6 +21,8 @@ const DataEntry: React.FC<DataEntryProps> = ({
 }) => {
   const [activeMainTab, setActiveMainTab] = useState<'products' | 'talent' | 'activity'>('products');
   const [isAiProcessing, setIsAiProcessing] = useState(false);
+  const [newCatName, setNewCatName] = useState('');
+  const [isAddingCat, setIsAddingCat] = useState(false);
   const visionInputRef = useRef<HTMLInputElement>(null);
 
   const productCategories = useMemo(() => categories.filter(c => c.type === 'sales'), [categories]);
@@ -37,12 +39,26 @@ const DataEntry: React.FC<DataEntryProps> = ({
   
   useEffect(() => {
     if (activeMainTab === 'products' || activeMainTab === 'talent') {
-      if (activeCategories.length > 0) setFocusedCatId(activeCategories[0].id);
-      else setFocusedCatId(null);
+      if (activeCategories.length > 0) {
+        // If the current focusedCatId is no longer in active categories, switch to first available
+        if (!activeCategories.find(c => c.id === focusedCatId)) {
+          setFocusedCatId(activeCategories[0].id);
+        }
+      } else {
+        setFocusedCatId(null);
+      }
     } else {
       setFocusedCatId('funnel_combined');
     }
   }, [activeMainTab, activeCategories]);
+
+  const handleAddCategory = () => {
+    if (newCatName.trim()) {
+      onAddCategory(newCatName.trim());
+      setNewCatName('');
+      setIsAddingCat(false);
+    }
+  };
 
   const handleVisionImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -78,7 +94,38 @@ const DataEntry: React.FC<DataEntryProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         <div className="lg:col-span-4 space-y-6">
           <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col">
-             <h3 className="text-xs font-black mb-6 uppercase tracking-widest text-slate-400">Structure</h3>
+             <div className="flex justify-between items-center mb-6">
+               <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">Structure</h3>
+               {activeMainTab === 'products' && (
+                 <button 
+                  onClick={() => setIsAddingCat(true)}
+                  className="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors"
+                  title="Add Category"
+                 >
+                   <Plus size={16} />
+                 </button>
+               )}
+             </div>
+
+             {isAddingCat && (
+               <div className="mb-4 p-4 bg-indigo-50 rounded-2xl animate-fade-in border border-indigo-100">
+                 <p className="text-[10px] font-black uppercase text-indigo-600 mb-2">New Sales Category</p>
+                 <div className="flex gap-2">
+                    <input 
+                      autoFocus
+                      type="text" 
+                      value={newCatName}
+                      onChange={(e) => setNewCatName(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
+                      placeholder="e.g. Solar Panels" 
+                      className="flex-1 p-2 text-xs font-bold bg-white border border-indigo-200 rounded-lg outline-none"
+                    />
+                    <button onClick={handleAddCategory} className="p-2 bg-indigo-600 text-white rounded-lg"><CheckCircle size={16} /></button>
+                    <button onClick={() => setIsAddingCat(false)} className="p-2 text-slate-400"><X size={16} /></button>
+                 </div>
+               </div>
+             )}
+
              <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 no-scrollbar">
               {activeMainTab === 'activity' ? (
                 <div className="p-4 bg-cyan-50 rounded-2xl border border-cyan-100">
@@ -88,6 +135,14 @@ const DataEntry: React.FC<DataEntryProps> = ({
               ) : activeCategories.map(c => (
                 <div key={c.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl group border border-transparent hover:border-slate-200 transition-all">
                   <span className="text-[10px] font-black uppercase tracking-widest text-slate-700">{c.name}</span>
+                  {activeMainTab === 'products' && categories.length > 1 && (
+                    <button 
+                      onClick={() => onRemoveCategory(c.id)}
+                      className="opacity-0 group-hover:opacity-100 p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
                 </div>
               ))}
               {activeCategories.length === 0 && activeMainTab !== 'activity' && (
