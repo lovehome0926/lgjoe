@@ -19,8 +19,8 @@
     "lucide-react": "https://esm.sh/lucide-react@0.460.0?external=react",
     "xlsx": "https://esm.sh/xlsx@0.18.5",
     "@google/genai": "https://esm.sh/@google/genai@0.21.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.0.0/",
-    "react/": "https://esm.sh/react@^19.0.0/"
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/"
   }
 }
 </script>
@@ -47,16 +47,9 @@
   <div id="root">
     <div class="flex flex-col items-center justify-center min-h-screen bg-slate-50">
       <div class="text-indigo-600 font-black text-3xl animate-pulse">BI ENGINE v3.1</div>
-      <div class="text-slate-400 text-[10px] font-black uppercase tracking-[0.5em] mt-4">Deploying Environment...</div>
+      <div class="text-slate-400 text-[10px] font-black uppercase tracking-[0.5em] mt-4">Initializing Matrix...</div>
     </div>
   </div>
   <script type="module" src="index.tsx"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('data:text/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdmZXRjaCcsIGZ1bmN0aW9uKGV2ZW50KSB7fSk7').catch(() => {});
-      });
-    }
-  </script>
 </body>
 </html>

@@ -40,31 +40,41 @@ const generateInitialData = (categories: Category[]): MonthlyData[] => {
 };
 
 export default function App() {
-  const [categories, setCategories] = useState<Category[]>(INITIAL_CATEGORIES);
-  const [data, setData] = useState<MonthlyData[]>([]);
+  // Synchronous initialization to prevent "empty data" rendering issues
+  const [categories, setCategories] = useState<Category[]>(() => {
+    const saved = localStorage.getItem('sales_categories_v3');
+    try {
+      return saved ? JSON.parse(saved) : INITIAL_CATEGORIES;
+    } catch {
+      return INITIAL_CATEGORIES;
+    }
+  });
+
+  const [data, setData] = useState<MonthlyData[]>(() => {
+    const saved = localStorage.getItem('sales_data_v3');
+    try {
+      return saved ? JSON.parse(saved) : generateInitialData(INITIAL_CATEGORIES);
+    } catch {
+      return generateInitialData(INITIAL_CATEGORIES);
+    }
+  });
+
+  const [savedPlan, setSavedPlan] = useState<StrategicPlan | null>(() => {
+    const saved = localStorage.getItem('sales_strategy_v3');
+    try {
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [productFilter, setProductFilter] = useState<ProductFilter>('all');
   const [isSaving, setIsSaving] = useState(false);
   const [isPresentationMode, setIsPresentationMode] = useState(false);
-  const [savedPlan, setSavedPlan] = useState<StrategicPlan | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const savedCats = localStorage.getItem('sales_categories_v3');
-    const savedData = localStorage.getItem('sales_data_v3');
-    const savedStrat = localStorage.getItem('sales_strategy_v3');
-    if (savedCats && savedData) {
-      try {
-        setCategories(JSON.parse(savedCats));
-        setData(JSON.parse(savedData));
-        if (savedStrat) setSavedPlan(JSON.parse(savedStrat));
-      } catch (e) {
-        setData(generateInitialData(INITIAL_CATEGORIES));
-      }
-    } else {
-      setData(generateInitialData(INITIAL_CATEGORIES));
-    }
-
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
@@ -73,7 +83,7 @@ export default function App() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [categories, data, savedPlan]);
 
   const handleSave = () => {
     setIsSaving(true);
@@ -115,9 +125,7 @@ export default function App() {
     reader.onload = (event) => {
       try {
         const json = JSON.parse(event.target?.result as string);
-        // 核心校验逻辑
         if (json.data && Array.isArray(json.data)) {
-          // 1. 强制写入本地存储（这是最关键的一步，跳过 React 的异步更新）
           localStorage.setItem('sales_categories_v3', JSON.stringify(json.categories || INITIAL_CATEGORIES));
           localStorage.setItem('sales_data_v3', JSON.stringify(json.data));
           if (json.savedPlan) {
@@ -125,12 +133,10 @@ export default function App() {
           } else {
             localStorage.removeItem('sales_strategy_v3');
           }
-
-          // 2. 给予用户反馈并强制刷新页面
-          alert("Restore Successful! The application will refresh to load your data.");
+          alert("Restore Successful! Page will reload to apply changes.");
           window.location.reload(); 
         } else {
-          alert("Invalid backup file. Please ensure it's a JSON file exported from this BI Tool.");
+          alert("Invalid backup file format.");
         }
       } catch (err) { 
         alert("Failed to read the backup file."); 
