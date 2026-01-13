@@ -65,7 +65,6 @@ export default function App() {
       setData(generateInitialData(INITIAL_CATEGORIES));
     }
 
-    // 添加快捷键支持：Ctrl+S 或 Cmd+S 保存
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
@@ -74,13 +73,17 @@ export default function App() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [categories, data, savedPlan]);
+  }, []);
 
   const handleSave = () => {
     setIsSaving(true);
     localStorage.setItem('sales_categories_v3', JSON.stringify(categories));
     localStorage.setItem('sales_data_v3', JSON.stringify(data));
-    if (savedPlan) localStorage.setItem('sales_strategy_v3', JSON.stringify(savedPlan));
+    if (savedPlan) {
+      localStorage.setItem('sales_strategy_v3', JSON.stringify(savedPlan));
+    } else {
+      localStorage.removeItem('sales_strategy_v3');
+    }
     setTimeout(() => {
       setIsSaving(false);
     }, 500);
@@ -113,13 +116,30 @@ export default function App() {
       try {
         const json = JSON.parse(event.target?.result as string);
         if (json.categories && json.data) {
+          // 1. 立即更新内存中的状态
           setCategories(json.categories);
           setData(json.data);
-          if (json.savedPlan) setSavedPlan(json.savedPlan);
-          handleSave();
+          setSavedPlan(json.savedPlan || null);
+          
+          // 2. 强制直接写入本地缓存，不依赖 handleSave 的闭包状态
+          localStorage.setItem('sales_categories_v3', JSON.stringify(json.categories));
+          localStorage.setItem('sales_data_v3', JSON.stringify(json.data));
+          if (json.savedPlan) {
+            localStorage.setItem('sales_strategy_v3', JSON.stringify(json.savedPlan));
+          } else {
+            localStorage.removeItem('sales_strategy_v3');
+          }
+
+          // 3. 重置文件选择器以便下次可以重新选择同一个文件
+          if (fileInputRef.current) fileInputRef.current.value = '';
+          
           alert("Data Restored Successfully!");
+        } else {
+          alert("Invalid file format: Missing essential BI data.");
         }
-      } catch (err) { alert("Invalid File Format."); }
+      } catch (err) { 
+        alert("Failed to read the backup file. Please ensure it is a valid JSON."); 
+      }
     };
     reader.readAsText(file);
   };
@@ -137,7 +157,7 @@ export default function App() {
     const newColor = colors[categories.length % colors.length];
     const newCat: Category = { id, name, color: newColor, type: 'sales' };
     setCategories(prev => [...prev, newCat]);
-    setData(prev => prev.map(item => ({ ...item, [`${id}Target`]: 0, [`${id}Actual`]: 0 })));
+    setData(prev => prev.map(item => ({ ...item, [`${id}Target`]: 0, [`${id}Actual`] : 0 })));
   };
 
   const removeCategory = (id: string) => {
