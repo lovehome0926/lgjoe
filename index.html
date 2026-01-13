@@ -3,88 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>BI Hub v4.0 - Global Intelligence</title>
-  <link rel="manifest" href="manifest.json">
-  <script>
-    // 紧急环境注入
-    window.process = window.process || { env: { API_KEY: "" } };
-  </script>
+  <title>BI Hub v4.3</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@19.0.0",
-    "react-dom": "https://esm.sh/react-dom@19.0.0",
-    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
-    "recharts": "https://esm.sh/recharts@2.15.0?external=react,react-dom",
-    "lucide-react": "https://esm.sh/lucide-react@0.460.0?external=react",
-    "xlsx": "https://esm.sh/xlsx@0.18.5",
-    "@google/genai": "https://esm.sh/@google/genai@0.21.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/"
-  }
-}
-</script>
   <style>
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .animate-fade-in { animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    
-    body { 
-      font-family: 'Inter', -apple-system, system-ui, sans-serif;
-      margin: 0; padding: 0; background-color: #f8fafc; overflow-x: hidden;
-    }
-
+    body { margin: 0; background: #f8fafc; font-family: 'Inter', system-ui; }
     #boot-status {
       position: fixed; inset: 0; display: flex; flex-direction: column;
       align-items: center; justify-content: center; background: #f8fafc;
-      z-index: 1000; transition: opacity 0.5s ease, visibility 0.5s;
+      z-index: 1000; transition: opacity 0.5s ease;
     }
-
-    #error-display {
-      display: none; max-width: 80%; background: #fef2f2; border: 1px solid #fee2e2;
-      padding: 1.5rem; border-radius: 0.75rem; color: #b91c1c; font-family: monospace;
-      white-space: pre-wrap; word-break: break-all; margin-top: 1rem; font-size: 11px;
+    .loader {
+      width: 40px; height: 40px; border: 4px solid #e2e8f0;
+      border-bottom-color: #6366f1; border-radius: 50%;
+      animation: rotation 0.8s linear infinite;
     }
+    @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "recharts": "https://esm.sh/recharts@^3.6.0",
+    "vite": "https://esm.sh/vite@^7.3.1",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
+    "@google/genai": "https://esm.sh/@google/genai@^1.35.0"
+  }
+}
+</script>
 </head>
-<body class="text-slate-900">
+<body>
   <div id="boot-status">
-    <div class="text-indigo-600 font-black text-4xl animate-pulse tracking-tighter uppercase">BI Engine v4.0</div>
-    <div class="text-slate-400 text-[10px] font-black uppercase tracking-[0.6em] mt-6">Initializing Systems</div>
-    <div id="error-display"></div>
-    <button id="retry-btn" style="display:none; margin-top: 2rem; padding: 0.75rem 1.5rem; background: #0f172a; color: white; border-radius: 0.75rem; cursor: pointer; font-weight: 800; font-size: 12px; text-transform: uppercase;" onclick="location.reload()">Force Restart</button>
+    <div class="loader"></div>
+    <div class="mt-4 font-black text-slate-800 tracking-tighter uppercase">Agency BI Engine</div>
+    <div class="mt-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest">System Booting...</div>
   </div>
-
   <div id="root"></div>
-
-  <script>
-    // 强制超时诊断
-    setTimeout(() => {
-      const status = document.getElementById('boot-status');
-      if (status && status.style.display !== 'none') {
-        const errorDisplay = document.getElementById('error-display');
-        const retry = document.getElementById('retry-btn');
-        if (errorDisplay) {
-          errorDisplay.style.display = 'block';
-          errorDisplay.innerHTML = "<b>BOOT_STUCK:</b> 加载超时。<br/><br/><b>排查建议：</b><br/>1. 检查控制台是否存在 'MIME type' 错误。<br/>2. 确保 Vercel 项目设置中选择了 <b>Vite</b> 框架预设。<br/>3. 如果你直接部署源码，浏览器无法直接运行 .tsx。请确保 Vercel 正常运行了编译步骤。";
-        }
-        if (retry) retry.style.display = 'block';
-      }
-    }, 6000);
-
-    window.onerror = function(msg, url, line, col, error) {
-      const display = document.getElementById('error-display');
-      const retry = document.getElementById('retry-btn');
-      if (display) {
-        display.style.display = 'block';
-        display.textContent = `CRITICAL_RUNTIME_ERROR: ${msg}\nUrl: ${url}\nLine: ${line}`;
-      }
-      if (retry) retry.style.display = 'block';
-      return false;
-    };
-  </script>
-  <script type="module" src="index.tsx"></script>
+  <script type="module" src="/index.tsx"></script>
 </body>
 </html>
