@@ -65,8 +65,8 @@
 </head>
 <body class="text-slate-900">
   <div id="boot-status">
-    <div class="text-indigo-600 font-black text-4xl animate-pulse tracking-tighter">BI ENGINE</div>
-    <div class="text-slate-400 text-[10px] font-black uppercase tracking-[0.6em] mt-6">Initializing Neural Link v3.2</div>
+    <div class="text-indigo-600 font-black text-4xl animate-pulse tracking-tighter uppercase">BI Engine Loading</div>
+    <div class="text-slate-400 text-[10px] font-black uppercase tracking-[0.6em] mt-6">Initializing Neural Link v3.3</div>
     <div id="error-display"></div>
     <button id="retry-btn" style="display:none; margin-top: 2rem; padding: 0.75rem 1.5rem; background: #0f172a; color: white; border-radius: 0.75rem; cursor: pointer; font-weight: 800; font-size: 12px; text-transform: uppercase;" onclick="location.reload()">Force Restart</button>
   </div>
@@ -74,6 +74,18 @@
   <div id="root"></div>
 
   <script>
+    // 强制超时保护：如果30秒内没加载完，显示错误
+    setTimeout(() => {
+      const status = document.getElementById('boot-status');
+      if (status && status.style.display !== 'none') {
+        const errorDisplay = document.getElementById('error-display');
+        if (errorDisplay) {
+          errorDisplay.style.display = 'block';
+          errorDisplay.textContent = "Boot timeout. Check console for module resolution errors.";
+        }
+      }
+    }, 30000);
+
     window.onerror = function(msg, url, line, col, error) {
       const display = document.getElementById('error-display');
       const retry = document.getElementById('retry-btn');
