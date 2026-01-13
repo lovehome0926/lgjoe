@@ -12,8 +12,8 @@ import {
   Filter, MousePointerClick, Edit2, Megaphone, Gift, Flame, ShoppingBag,
   Rocket, Layers
 } from 'lucide-react';
-import { MonthlyData, ProductFilter, Category, ChatMessage, StrategicPlan } from '../types.ts';
-import StatCard from './StatCard.tsx';
+import { MonthlyData, ProductFilter, Category, ChatMessage, StrategicPlan } from '../types';
+import StatCard from './StatCard';
 import { GoogleGenAI, Type } from '@google/genai';
 
 interface DashboardProps {

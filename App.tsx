@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   BarChart2, 
@@ -13,9 +12,9 @@ import {
   RefreshCw,
   Lightbulb
 } from 'lucide-react';
-import { MonthlyData, ProductFilter, ActiveTab, Category, StrategicPlan } from './types.ts';
-import Dashboard from './components/Dashboard.tsx';
-import DataEntry from './components/DataEntry.tsx';
+import { MonthlyData, ProductFilter, ActiveTab, Category, StrategicPlan } from './types';
+import Dashboard from './components/Dashboard';
+import DataEntry from './components/DataEntry';
 
 const INITIAL_CATEGORIES: Category[] = [
   { id: 'water', name: 'Water Systems', color: 'indigo', type: 'sales' },
@@ -65,7 +64,6 @@ export default function App() {
       setData(generateInitialData(INITIAL_CATEGORIES));
     }
 
-    // 添加快捷键支持：Ctrl+S 或 Cmd+S 保存
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
@@ -74,7 +72,7 @@ export default function App() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [categories, data, savedPlan]);
+  }, []);
 
   const handleSave = () => {
     setIsSaving(true);
