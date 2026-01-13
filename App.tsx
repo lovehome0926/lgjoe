@@ -13,9 +13,9 @@ import {
   RefreshCw,
   Lightbulb
 } from 'lucide-react';
-import { MonthlyData, ProductFilter, ActiveTab, Category, StrategicPlan } from './types.ts';
-import Dashboard from './components/Dashboard.tsx';
-import DataEntry from './components/DataEntry.tsx';
+import { MonthlyData, ProductFilter, ActiveTab, Category, StrategicPlan } from './types';
+import Dashboard from './components/Dashboard';
+import DataEntry from './components/DataEntry';
 
 const INITIAL_CATEGORIES: Category[] = [
   { id: 'water', name: 'Water Systems', color: 'indigo', type: 'sales' },
@@ -40,7 +40,6 @@ const generateInitialData = (categories: Category[]): MonthlyData[] => {
 };
 
 export default function App() {
-  // Synchronous initialization to prevent "empty data" rendering issues
   const [categories, setCategories] = useState<Category[]>(() => {
     const saved = localStorage.getItem('sales_categories_v3');
     try {
@@ -133,7 +132,7 @@ export default function App() {
           } else {
             localStorage.removeItem('sales_strategy_v3');
           }
-          alert("Restore Successful! Page will reload to apply changes.");
+          alert("Restore Successful! The engine will restart to apply data.");
           window.location.reload(); 
         } else {
           alert("Invalid backup file format.");
