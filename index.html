@@ -3,10 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Strategic Performance BI Hub</title>
+  <title>BI Hub v4.0 - Critical Recovery</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <script>
+    // 防御性注入：防止代码中访问 process.env 导致崩溃
+    window.process = window.process || { env: { API_KEY: "" } };
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script type="importmap">
 {
@@ -31,64 +33,53 @@
     
     body { 
       font-family: 'Inter', -apple-system, system-ui, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f8fafc;
-      overflow-x: hidden;
+      margin: 0; padding: 0; background-color: #f8fafc; overflow-x: hidden;
     }
 
     #boot-status {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: #f8fafc;
-      z-index: 1000;
+      position: fixed; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; background: #f8fafc;
+      z-index: 1000; transition: opacity 0.5s ease, visibility 0.5s;
     }
 
     #error-display {
-      display: none;
-      max-width: 80%;
-      background: #fef2f2;
-      border: 1px solid #fee2e2;
-      padding: 1.5rem;
-      border-radius: 0.75rem;
-      color: #b91c1c;
-      font-family: monospace;
-      white-space: pre-wrap;
-      word-break: break-all;
-      margin-top: 1rem;
+      display: none; max-width: 80%; background: #fef2f2; border: 1px solid #fee2e2;
+      padding: 1.5rem; border-radius: 0.75rem; color: #b91c1c; font-family: monospace;
+      white-space: pre-wrap; word-break: break-all; margin-top: 1rem; font-size: 11px;
     }
   </style>
 </head>
 <body class="text-slate-900">
   <div id="boot-status">
-    <div class="text-indigo-600 font-black text-4xl animate-pulse tracking-tighter uppercase">BI Engine Loading</div>
-    <div class="text-slate-400 text-[10px] font-black uppercase tracking-[0.6em] mt-6">Initializing Neural Link v3.4</div>
+    <div class="text-indigo-600 font-black text-4xl animate-pulse tracking-tighter uppercase">BI Engine v4.0</div>
+    <div class="text-slate-400 text-[10px] font-black uppercase tracking-[0.6em] mt-6">Deploying Critical Recovery Patch</div>
     <div id="error-display"></div>
-    <button id="retry-btn" style="display:none; margin-top: 2rem; padding: 0.75rem 1.5rem; background: #0f172a; color: white; border-radius: 0.75rem; cursor: pointer; font-weight: 800; font-size: 12px; text-transform: uppercase;" onclick="location.reload()">Force Restart</button>
+    <button id="retry-btn" style="display:none; margin-top: 2rem; padding: 0.75rem 1.5rem; background: #0f172a; color: white; border-radius: 0.75rem; cursor: pointer; font-weight: 800; font-size: 12px; text-transform: uppercase;" onclick="location.reload()">Force Refresh</button>
   </div>
 
   <div id="root"></div>
 
   <script>
-    // 超时自动显示重试按钮
+    // 强制保险：5秒后如果还没进 App，强行显示错误详情
     setTimeout(() => {
       const status = document.getElementById('boot-status');
       if (status && status.style.display !== 'none') {
+        const errorDisplay = document.getElementById('error-display');
         const retry = document.getElementById('retry-btn');
+        if (errorDisplay) {
+          errorDisplay.style.display = 'block';
+          errorDisplay.innerHTML = "<b>BOOT_TIMEOUT_AUTO_RECOVERY:</b><br/>Detecting script block. Check F12 Console.<br/><br/>If you see 'v3.1' in the background, your Vercel deployment is STUCK on an old version.";
+        }
         if (retry) retry.style.display = 'block';
       }
-    }, 15000);
+    }, 5000);
 
     window.onerror = function(msg, url, line, col, error) {
       const display = document.getElementById('error-display');
       const retry = document.getElementById('retry-btn');
       if (display) {
         display.style.display = 'block';
-        display.textContent = `CRITICAL_LOAD_ERROR: ${msg}\nAt: ${url}:${line}:${col}`;
+        display.textContent = `CORE_CRASH: ${msg}\nFile: ${url}\nLine: ${line}`;
       }
       if (retry) retry.style.display = 'block';
       return false;

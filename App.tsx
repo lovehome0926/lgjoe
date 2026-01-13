@@ -90,13 +90,13 @@ export default function App() {
       data,
       savedPlan,
       exportedAt: new Date().toISOString(),
-      version: "3.2"
+      version: "4.0"
     };
     const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `Agency_BI_Backup_${new Date().toISOString().split('T')[0]}.json`;
+    link.download = `Agency_BI_Backup_v4_${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -135,7 +135,7 @@ export default function App() {
     const newColor = colors[categories.length % colors.length];
     const newCat: Category = { id, name, color: newColor, type: 'sales' };
     setCategories(prev => [...prev, newCat]);
-    setData(prev => prev.map(item => ({ ...item, [`${id}Target`]: 0, [`${id}Actual`]: 0 })));
+    setData(prev => prev.map(item => ({ ...item, [`${id}Target`]: 0, [`${id}Actual`] : 0 })));
   };
 
   const renameCategory = (id: string, newName: string) => {
@@ -172,7 +172,7 @@ export default function App() {
                   <h1 className="text-lg font-black tracking-tight text-slate-900 leading-none">
                     Strategic Hub <span className="text-indigo-600">2026</span>
                   </h1>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">AI-Powered Agency BI</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">AI-Powered Agency BI v4.0</p>
                 </div>
               </div>
 
@@ -209,7 +209,7 @@ export default function App() {
                 {activeTab === 'dashboard' ? 'Performance Analytics' : activeTab === 'strategy' ? 'Strategy Workshop' : 'Data Entry Matrix'}
                 <Sparkles className="text-amber-500 w-6 h-6" />
               </h2>
-              <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-2">Dynamic Intelligence Dashboard v3.2</p>
+              <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-2">Dynamic Intelligence Dashboard v4.0</p>
             </div>
           </div>
         )}

@@ -10,7 +10,8 @@ const hideBootStatus = () => {
     status.style.opacity = '0';
     setTimeout(() => {
       status.style.display = 'none';
-    }, 300);
+      status.style.visibility = 'hidden';
+    }, 500);
   }
 };
 
@@ -19,13 +20,15 @@ const showError = (message: string) => {
   const retry = document.getElementById('retry-btn');
   if (display) {
     display.style.display = 'block';
-    display.textContent = message;
+    display.textContent = `JS_RUNTIME_ERROR (v4.0): ${message}`;
   }
   if (retry) retry.style.display = 'block';
+  // 即使报错，也要关掉 Loading，否则用户什么都看不见
+  hideBootStatus();
 };
 
 if (!rootElement) {
-  showError("BI Engine: Critical - Root element not found.");
+  showError("Root element '#root' missing in HTML.");
 } else {
   try {
     const root = createRoot(rootElement);
@@ -34,13 +37,12 @@ if (!rootElement) {
         <App />
       </React.StrictMode>
     );
-    // 渲染启动后立即尝试隐藏加载层
+    // 强制 UI 线程空闲时隐藏加载动画
     requestAnimationFrame(() => {
-      setTimeout(hideBootStatus, 600);
+      setTimeout(hideBootStatus, 1000);
     });
-  } catch (err) {
-    console.error("BI Engine Mount Error:", err);
-    hideBootStatus();
-    showError(`Hydration Failure: ${err instanceof Error ? err.message : String(err)}`);
+  } catch (err: any) {
+    console.error("Critical Mount Error:", err);
+    showError(err?.message || String(err));
   }
 }
