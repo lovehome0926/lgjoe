@@ -115,14 +115,10 @@ export default function App() {
     reader.onload = (event) => {
       try {
         const json = JSON.parse(event.target?.result as string);
-        if (json.categories && json.data) {
-          // 1. 立即更新内存中的状态
-          setCategories(json.categories);
-          setData(json.data);
-          setSavedPlan(json.savedPlan || null);
-          
-          // 2. 强制直接写入本地缓存，不依赖 handleSave 的闭包状态
-          localStorage.setItem('sales_categories_v3', JSON.stringify(json.categories));
+        // 核心校验逻辑
+        if (json.data && Array.isArray(json.data)) {
+          // 1. 强制写入本地存储（这是最关键的一步，跳过 React 的异步更新）
+          localStorage.setItem('sales_categories_v3', JSON.stringify(json.categories || INITIAL_CATEGORIES));
           localStorage.setItem('sales_data_v3', JSON.stringify(json.data));
           if (json.savedPlan) {
             localStorage.setItem('sales_strategy_v3', JSON.stringify(json.savedPlan));
@@ -130,15 +126,14 @@ export default function App() {
             localStorage.removeItem('sales_strategy_v3');
           }
 
-          // 3. 重置文件选择器以便下次可以重新选择同一个文件
-          if (fileInputRef.current) fileInputRef.current.value = '';
-          
-          alert("Data Restored Successfully!");
+          // 2. 给予用户反馈并强制刷新页面
+          alert("Restore Successful! The application will refresh to load your data.");
+          window.location.reload(); 
         } else {
-          alert("Invalid file format: Missing essential BI data.");
+          alert("Invalid backup file. Please ensure it's a JSON file exported from this BI Tool.");
         }
       } catch (err) { 
-        alert("Failed to read the backup file. Please ensure it is a valid JSON."); 
+        alert("Failed to read the backup file."); 
       }
     };
     reader.readAsText(file);
