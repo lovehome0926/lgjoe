@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   BarChart2, 
@@ -12,9 +13,9 @@ import {
   RefreshCw,
   Lightbulb
 } from 'lucide-react';
-import { MonthlyData, ProductFilter, ActiveTab, Category, StrategicPlan } from './types';
-import Dashboard from './components/Dashboard';
-import DataEntry from './components/DataEntry';
+import { MonthlyData, ProductFilter, ActiveTab, Category, StrategicPlan } from './types.ts';
+import Dashboard from './components/Dashboard.tsx';
+import DataEntry from './components/DataEntry.tsx';
 
 const INITIAL_CATEGORIES: Category[] = [
   { id: 'water', name: 'Water Systems', color: 'indigo', type: 'sales' },
@@ -39,40 +40,32 @@ const generateInitialData = (categories: Category[]): MonthlyData[] => {
 };
 
 export default function App() {
-  const [categories, setCategories] = useState<Category[]>(() => {
-    const saved = localStorage.getItem('sales_categories_v3');
-    try {
-      return saved ? JSON.parse(saved) : INITIAL_CATEGORIES;
-    } catch {
-      return INITIAL_CATEGORIES;
-    }
-  });
-
-  const [data, setData] = useState<MonthlyData[]>(() => {
-    const saved = localStorage.getItem('sales_data_v3');
-    try {
-      return saved ? JSON.parse(saved) : generateInitialData(INITIAL_CATEGORIES);
-    } catch {
-      return generateInitialData(INITIAL_CATEGORIES);
-    }
-  });
-
-  const [savedPlan, setSavedPlan] = useState<StrategicPlan | null>(() => {
-    const saved = localStorage.getItem('sales_strategy_v3');
-    try {
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
-
+  const [categories, setCategories] = useState<Category[]>(INITIAL_CATEGORIES);
+  const [data, setData] = useState<MonthlyData[]>([]);
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [productFilter, setProductFilter] = useState<ProductFilter>('all');
   const [isSaving, setIsSaving] = useState(false);
   const [isPresentationMode, setIsPresentationMode] = useState(false);
+  const [savedPlan, setSavedPlan] = useState<StrategicPlan | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    const savedCats = localStorage.getItem('sales_categories_v3');
+    const savedData = localStorage.getItem('sales_data_v3');
+    const savedStrat = localStorage.getItem('sales_strategy_v3');
+    if (savedCats && savedData) {
+      try {
+        setCategories(JSON.parse(savedCats));
+        setData(JSON.parse(savedData));
+        if (savedStrat) setSavedPlan(JSON.parse(savedStrat));
+      } catch (e) {
+        setData(generateInitialData(INITIAL_CATEGORIES));
+      }
+    } else {
+      setData(generateInitialData(INITIAL_CATEGORIES));
+    }
+
+    // 添加快捷键支持：Ctrl+S 或 Cmd+S 保存
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
@@ -87,11 +80,7 @@ export default function App() {
     setIsSaving(true);
     localStorage.setItem('sales_categories_v3', JSON.stringify(categories));
     localStorage.setItem('sales_data_v3', JSON.stringify(data));
-    if (savedPlan) {
-      localStorage.setItem('sales_strategy_v3', JSON.stringify(savedPlan));
-    } else {
-      localStorage.removeItem('sales_strategy_v3');
-    }
+    if (savedPlan) localStorage.setItem('sales_strategy_v3', JSON.stringify(savedPlan));
     setTimeout(() => {
       setIsSaving(false);
     }, 500);
@@ -123,22 +112,14 @@ export default function App() {
     reader.onload = (event) => {
       try {
         const json = JSON.parse(event.target?.result as string);
-        if (json.data && Array.isArray(json.data)) {
-          localStorage.setItem('sales_categories_v3', JSON.stringify(json.categories || INITIAL_CATEGORIES));
-          localStorage.setItem('sales_data_v3', JSON.stringify(json.data));
-          if (json.savedPlan) {
-            localStorage.setItem('sales_strategy_v3', JSON.stringify(json.savedPlan));
-          } else {
-            localStorage.removeItem('sales_strategy_v3');
-          }
-          alert("Restore Successful! The engine will restart to apply data.");
-          window.location.reload(); 
-        } else {
-          alert("Invalid backup file format.");
+        if (json.categories && json.data) {
+          setCategories(json.categories);
+          setData(json.data);
+          if (json.savedPlan) setSavedPlan(json.savedPlan);
+          handleSave();
+          alert("Data Restored Successfully!");
         }
-      } catch (err) { 
-        alert("Failed to read the backup file."); 
-      }
+      } catch (err) { alert("Invalid File Format."); }
     };
     reader.readAsText(file);
   };
@@ -156,7 +137,7 @@ export default function App() {
     const newColor = colors[categories.length % colors.length];
     const newCat: Category = { id, name, color: newColor, type: 'sales' };
     setCategories(prev => [...prev, newCat]);
-    setData(prev => prev.map(item => ({ ...item, [`${id}Target`]: 0, [`${id}Actual`] : 0 })));
+    setData(prev => prev.map(item => ({ ...item, [`${id}Target`]: 0, [`${id}Actual`]: 0 })));
   };
 
   const removeCategory = (id: string) => {

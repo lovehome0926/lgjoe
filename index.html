@@ -1,11 +1,12 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Strategic Performance BI</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="./manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="https://cdn.tailwindcss.com"></script>
   <script type="importmap">
@@ -29,50 +30,42 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .animate-fade-in { animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     
+    @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .animate-spin-slow { animation: spin-slow 12s linear infinite; }
+    
     body { 
       font-family: 'Inter', -apple-system, system-ui, sans-serif;
       margin: 0;
       padding: 0;
       background-color: #f8fafc;
       overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    #error-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: white;
-      z-index: 9999;
-      padding: 40px;
-      font-family: monospace;
-      color: #e11d48;
-    }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
   </style>
 </head>
 <body class="text-slate-900">
-  <div id="error-overlay">
-    <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 20px;">BI ENGINE: CRITICAL BOOT ERROR</h1>
-    <div id="error-message" style="background: #fff1f2; padding: 20px; border-radius: 12px; border: 1px solid #fda4af;"></div>
-    <button onclick="window.location.reload()" style="margin-top: 20px; padding: 12px 24px; background: #0f172a; color: white; border-radius: 8px; cursor: pointer; border: none; font-weight: bold;">Retry Initialization</button>
-  </div>
-
   <div id="root">
     <div class="flex flex-col items-center justify-center min-h-screen bg-slate-50">
-      <div class="text-indigo-600 font-black text-3xl animate-pulse">BI ENGINE v3.1</div>
-      <div class="text-slate-400 text-[10px] font-black uppercase tracking-[0.5em] mt-4">Deploying Environment...</div>
+      <div class="relative">
+        <div class="absolute inset-0 bg-indigo-500/20 blur-3xl rounded-full"></div>
+        <div class="relative text-indigo-600 font-black text-3xl tracking-tighter animate-pulse mb-3">BI ENGINE v3.1</div>
+      </div>
+      <div class="text-slate-400 text-[10px] font-black uppercase tracking-[0.5em] mt-4">Initializing Strategic Lab...</div>
     </div>
   </div>
-
+  <script type="module" src="./index.tsx"></script>
   <script>
-    window.onerror = function(msg, url, lineNo, columnNo, error) {
-      const overlay = document.getElementById('error-overlay');
-      const message = document.getElementById('error-message');
-      if (overlay && message) {
-        overlay.style.display = 'block';
-        message.innerHTML = `<strong>Error:</strong> ${msg}<br><strong>At:</strong> ${url}:${lineNo}:${columnNo}`;
-      }
-      return false;
-    };
+    // 注册一个空的 Service Worker 满足 PWA 安装要求
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('data:text/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdmZXRjaCcsIGZ1bmN0aW9uKGV2ZW50KSB7fSk7').catch(err => console.log('SW register failed:', err));
+      });
+    }
   </script>
 </body>
 </html>

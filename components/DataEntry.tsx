@@ -1,10 +1,10 @@
-import React, { useState, useRef, useMemo, useEffect } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { 
   Edit3, CheckCircle, Plus, Trash2, Camera, Loader2, Package, Briefcase, 
   ChevronRight, Activity, Filter, MousePointerClick
 } from 'lucide-react';
-import { MonthlyData, Category } from '../types';
-import { GoogleGenAI } from '@google/genai';
+import { MonthlyData, Category } from '../types.ts';
+import { GoogleGenAI, Type } from '@google/genai';
 
 interface DataEntryProps {
   data: MonthlyData[];
@@ -19,6 +19,7 @@ interface DataEntryProps {
 const DataEntry: React.FC<DataEntryProps> = ({ 
   data, categories, onDataChange, onAddCategory, onRemoveCategory, onSetData, onFinish 
 }) => {
+  const [newCatName, setNewCatName] = useState('');
   const [activeMainTab, setActiveMainTab] = useState<'products' | 'talent' | 'activity'>('products');
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const visionInputRef = useRef<HTMLInputElement>(null);
@@ -35,14 +36,10 @@ const DataEntry: React.FC<DataEntryProps> = ({
 
   const [focusedCatId, setFocusedCatId] = useState<string | null>(null);
   
-  // Logic fix: Move state side-effects to useEffect
-  useEffect(() => {
+  useMemo(() => {
     if (activeMainTab === 'products' || activeMainTab === 'talent') {
-      if (activeCategories.length > 0) {
-        setFocusedCatId(activeCategories[0].id);
-      } else {
-        setFocusedCatId(null);
-      }
+      if (activeCategories.length > 0) setFocusedCatId(activeCategories[0].id);
+      else setFocusedCatId(null);
     } else {
       setFocusedCatId('funnel_combined');
     }
@@ -60,10 +57,10 @@ const DataEntry: React.FC<DataEntryProps> = ({
       });
       const base64Data = await base64Promise;
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      // Example call
-      await ai.models.generateContent({
+      const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
-        contents: [{ parts: [{ inlineData: { data: base64Data, mimeType: file.type } }, { text: `Extract monthly table data.` }] }]
+        contents: [{ parts: [{ inlineData: { data: base64Data, mimeType: file.type } }, { text: `Extract monthly table data. Return valid JSON.` }] }],
+        config: { responseMimeType: "application/json" }
       });
       alert("AI scan simulation: Verify data mapping.");
     } catch (err) { alert("AI Vision failed."); } finally { setIsAiProcessing(false); }
@@ -72,31 +69,28 @@ const DataEntry: React.FC<DataEntryProps> = ({
   return (
     <div className="space-y-8 animate-fade-in relative">
       <div className="flex flex-col items-center gap-6 mb-2">
-        <div className="bg-slate-200/50 p-1.5 rounded-[2.5rem] flex gap-2 border border-slate-100 shadow-inner max-w-full overflow-x-auto flex-nowrap no-scrollbar">
-          <button onClick={() => setActiveMainTab('products')} className={`flex items-center gap-3 px-10 py-4 rounded-[2.2rem] text-xs font-black uppercase transition-all whitespace-nowrap ${activeMainTab === 'products' ? 'bg-white text-indigo-600 shadow-xl' : 'text-slate-500'}`}><Package size={18} /> Sales Portfolio</button>
-          <button onClick={() => setActiveMainTab('talent')} className={`flex items-center gap-3 px-10 py-4 rounded-[2.2rem] text-xs font-black uppercase transition-all whitespace-nowrap ${activeMainTab === 'talent' ? 'bg-white text-rose-600 shadow-xl' : 'text-slate-500'}`}><Briefcase size={18} /> Recruitment</button>
-          <button onClick={() => setActiveMainTab('activity')} className={`flex items-center gap-3 px-10 py-4 rounded-[2.2rem] text-xs font-black uppercase transition-all whitespace-nowrap ${activeMainTab === 'activity' ? 'bg-white text-cyan-600 shadow-xl' : 'text-slate-500'}`}><Activity size={18} /> Funnel Activity</button>
+        <div className="bg-slate-200/50 p-1.5 rounded-[2.5rem] flex gap-2 border border-slate-100 shadow-inner">
+          <button onClick={() => setActiveMainTab('products')} className={`flex items-center gap-3 px-10 py-4 rounded-[2.2rem] text-xs font-black uppercase transition-all ${activeMainTab === 'products' ? 'bg-white text-indigo-600 shadow-xl' : 'text-slate-500'}`}><Package size={18} /> Sales Portfolio</button>
+          <button onClick={() => setActiveMainTab('talent')} className={`flex items-center gap-3 px-10 py-4 rounded-[2.2rem] text-xs font-black uppercase transition-all ${activeMainTab === 'talent' ? 'bg-white text-rose-600 shadow-xl' : 'text-slate-500'}`}><Briefcase size={18} /> Recruitment</button>
+          <button onClick={() => setActiveMainTab('activity')} className={`flex items-center gap-3 px-10 py-4 rounded-[2.2rem] text-xs font-black uppercase transition-all ${activeMainTab === 'activity' ? 'bg-white text-cyan-600 shadow-xl' : 'text-slate-500'}`}><Activity size={18} /> Funnel Activity</button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         <div className="lg:col-span-4 space-y-6">
-          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col">
+          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
              <h3 className="text-xs font-black mb-6 uppercase tracking-widest text-slate-400">Structure</h3>
-             <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 no-scrollbar">
+             <div className="space-y-3">
               {activeMainTab === 'activity' ? (
                 <div className="p-4 bg-cyan-50 rounded-2xl border border-cyan-100">
                   <p className="text-[10px] font-black uppercase text-cyan-600 mb-1">Combined Mode</p>
                   <p className="text-[10px] text-slate-400 font-bold uppercase">Editing Leads, Served, & Closed side-by-side.</p>
                 </div>
               ) : activeCategories.map(c => (
-                <div key={c.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl group border border-transparent hover:border-slate-200 transition-all">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-700">{c.name}</span>
+                <div key={c.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl group">
+                  <span className="text-[10px] font-black uppercase tracking-widest">{c.name}</span>
                 </div>
               ))}
-              {activeCategories.length === 0 && activeMainTab !== 'activity' && (
-                <div className="p-10 text-center opacity-30 italic text-xs font-bold uppercase">No items in domain</div>
-              )}
             </div>
           </div>
 
@@ -116,10 +110,10 @@ const DataEntry: React.FC<DataEntryProps> = ({
 
           <div className="flex-1 flex overflow-hidden min-h-[500px]">
              {activeMainTab !== 'activity' && (
-               <div className="w-1/3 border-r border-slate-100 bg-slate-50/30 overflow-y-auto p-6 space-y-3 no-scrollbar">
+               <div className="w-1/3 border-r border-slate-100 bg-slate-50/30 overflow-y-auto p-6 space-y-3">
                   {activeCategories.map(cat => (
                     <button key={cat.id} onClick={() => setFocusedCatId(cat.id)} className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all border ${focusedCatId === cat.id ? 'bg-white border-indigo-200 shadow-md' : 'bg-transparent border-transparent hover:bg-slate-100'}`}>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 text-left leading-tight">{cat.name}</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">{cat.name}</span>
                       <ChevronRight size={14} className={focusedCatId === cat.id ? 'text-indigo-400' : 'text-slate-300'} />
                     </button>
                   ))}
@@ -135,7 +129,7 @@ const DataEntry: React.FC<DataEntryProps> = ({
                       <div className="col-span-3 text-center">Served</div>
                       <div className="col-span-3 text-center">Closed</div>
                     </div>
-                    <div className="space-y-3 pb-10">
+                    <div className="space-y-3">
                       {data.map((row, idx) => (
                         <div key={idx} className="grid grid-cols-12 gap-4 items-center p-3 bg-slate-50/50 rounded-2xl hover:bg-slate-50 transition-colors">
                           <div className="col-span-3 font-black text-slate-900 text-[10px] uppercase">{row.month}</div>
@@ -148,13 +142,13 @@ const DataEntry: React.FC<DataEntryProps> = ({
                  </div>
                ) : focusedCatId ? (
                  <div className="space-y-6">
-                    <h4 className="text-xl font-black uppercase tracking-tighter leading-tight">{activeCategories.find(c => c.id === focusedCatId)?.name} Matrix</h4>
+                    <h4 className="text-xl font-black uppercase tracking-tighter">{activeCategories.find(c => c.id === focusedCatId)?.name} Matrix</h4>
                     <div className="grid grid-cols-12 gap-4 px-4 text-[9px] font-black uppercase text-slate-400 tracking-widest">
                       <div className="col-span-4">Month</div>
                       <div className="col-span-4 text-center">Target</div>
                       <div className="col-span-4 text-center">Actual</div>
                     </div>
-                    <div className="space-y-3 pb-10">
+                    <div className="space-y-3">
                       {data.map((row, idx) => (
                         <div key={idx} className="grid grid-cols-12 gap-4 items-center p-4 bg-slate-50/50 rounded-2xl">
                           <div className="col-span-4 font-black text-slate-900 text-xs uppercase">{row.month}</div>
@@ -168,7 +162,7 @@ const DataEntry: React.FC<DataEntryProps> = ({
              </div>
           </div>
           <div className="p-10 bg-slate-50/80 border-t border-slate-100 flex justify-end">
-            <button onClick={onFinish} className="px-20 py-5 bg-indigo-600 text-white rounded-[2rem] font-black shadow-2xl transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-3 uppercase text-[10px] tracking-widest">Sync Agency Matrix <CheckCircle size={20} /></button>
+            <button onClick={onFinish} className="px-20 py-5 bg-indigo-600 text-white rounded-[2rem] font-black shadow-2xl transition-all flex items-center gap-3 uppercase text-[10px] tracking-widest">Sync Agency Matrix <CheckCircle size={20} /></button>
           </div>
         </div>
       </div>
